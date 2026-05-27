@@ -36,6 +36,43 @@ test('pull after submit transitions exactly once; concurrent submit on pulled is
   expect(pulled2?.finalAnswers).toEqual({ q1: 'one' });
 });
 
+test('concurrent submit during pull is rejected after pull wins', async () => {
+  const db = await createTestDb();
+  const u = await signupUser(db, { email: 'a@b.c', password: 'hunter2hunter2', displayName: 'A' });
+  const r = await createRequest(db, u.id, {
+    title: 't',
+    questions: [{ id: 'q1', type: 'text_short', prompt: 'q?' }],
+    publicBaseUrl: 'http://x',
+  });
+  const tokenRows = await db.select().from(requests).where(eq(requests.id, r.id)).limit(1);
+  const token = tokenRows[0]?.token ?? '';
+
+  // First submit so pullResponse has something to pull
+  await submit(db, token, { q1: 'first' });
+
+  // Race: pull (transitions to pulled) and a competing submit
+  const [pullRes, submitRes] = await Promise.allSettled([
+    pullResponse(db, u.id, r.id),
+    submit(db, token, { q1: 'racer' }),
+  ]);
+
+  // Pull must always succeed.
+  expect(pullRes.status).toBe('fulfilled');
+  if (pullRes.status === 'fulfilled') {
+    expect(pullRes.value?.status).toBe('pulled');
+  }
+
+  // The competing submit either succeeded (won the race before pull) OR was rejected with already_pulled.
+  // Either is acceptable — what is NOT acceptable is silent overwrite, which the new guard prevents.
+  if (submitRes.status === 'rejected') {
+    expect((submitRes.reason as { code: string }).code).toBe('already_pulled');
+  }
+
+  // Final state: status='pulled'
+  const final = await db.select().from(requests).where(eq(requests.id, r.id)).limit(1);
+  expect(final[0]?.status).toBe('pulled');
+});
+
 test('two parallel pulls each get answers; only one performs the transition', async () => {
   const db = await createTestDb();
   const u = await signupUser(db, { email: 'a@b.c', password: 'hunter2hunter2', displayName: 'A' });

@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import type { DB } from '@/db/client';
 import type { TestDB } from '@/db/test-db';
 import { requests } from '@/db/schema';
@@ -26,7 +26,7 @@ export async function submit(
   if (!v.success) {
     throw new AppError('validation_failed', v.error, 400);
   }
-  await db
+  const result = await db
     .update(requests)
     .set({
       status: 'submitted',
@@ -34,5 +34,14 @@ export async function submit(
       submittedAt: now(),
       draftAnswers: null,
     })
-    .where(eq(requests.id, r.id));
+    .where(
+      and(
+        eq(requests.id, r.id),
+        inArray(requests.status, ['pending', 'submitted'] as string[])
+      )
+    )
+    .returning({ id: requests.id });
+  if (result.length === 0) {
+    throw new AppError('already_pulled', 'Request was pulled or cancelled during submission', 409);
+  }
 }

@@ -38,10 +38,13 @@ export async function listRequests(
   const statuses = input.status && input.status.length > 0 ? input.status : DEFAULT_STATUS;
   const limit = Math.max(1, Math.min(input.limit ?? DEFAULT_LIMIT, 100));
 
-  const baseWhere = and(
+  const whereClauses = [
     eq(requests.userId, userId),
-    inArray(requests.status, statuses as string[])
-  );
+    inArray(requests.status, statuses as string[]),
+  ];
+  if (input.projectName) {
+    whereClauses.push(eq(projects.name, input.projectName));
+  }
 
   const rows = await db
     .select({
@@ -58,15 +61,11 @@ export async function listRequests(
     })
     .from(requests)
     .leftJoin(projects, eq(projects.id, requests.projectId))
-    .where(baseWhere)
+    .where(and(...whereClauses))
     .orderBy(desc(requests.createdAt))
     .limit(limit);
 
-  const filtered = input.projectName
-    ? rows.filter((r) => r.projectName === input.projectName)
-    : rows;
-
-  return filtered.map((r) => {
+  return rows.map((r) => {
     const questions = JSON.parse(r.questions) as unknown[];
     const final = r.finalAnswers ? (JSON.parse(r.finalAnswers) as Record<string, unknown>) : null;
     return {
