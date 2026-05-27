@@ -31,8 +31,10 @@ account.
 - Editable tussen submit en pull (Claude "claimt" door te pullen)
 - Per-request private `context` veld voor cross-session geheugen
 - Projects (lichtgewicht: gewoon string-name per user)
-- Branding: jouw naam + project-naam zichtbaar voor opdrachtgever
+- Branding: jouw `displayName` + project-naam zichtbaar voor ontvanger; personalisatie
+  per request gebeurt via `intro` (markdown)
 - Dev-dashboard om links te zien, status te volgen, antwoorden te lezen
+- Invocation: `/loop-in` slash command + auto-trigger skill voor Claude Code
 
 **Out of scope (later):**
 - Drawing / audio question types
@@ -465,12 +467,79 @@ capture via journald.
 GitHub Actions: `bun test` + Playwright op PR. Migrations runnen tegen Postgres
 *én* SQLite om driver-divergentie te catchen.
 
+## Invocation surface (dev-kant)
+
+Twee oppervlakken in Claude Code triggeren Loop:
+
+### Skill (auto-triggered)
+
+`skills/loop-in.md` — geïnstalleerd in `~/.claude/skills/` of `.claude/skills/`
+per project. Activation hints op brede taal over "input van iemand anders nodig":
+
+- "moet [iemand] vragen"
+- "heb input nodig van"
+- "[naam] moet kiezen tussen"
+- "wachten op feedback van"
+- "even bij [iemand] checken"
+- "weet [naam] of [topic]"
+
+De skill leert Claude:
+1. Gebruik Loop's MCP tools wanneer dev externe input nodig heeft.
+2. Vul altijd `context` in (briefing voor future-self).
+3. Schrijf `intro` in begrijpelijke taal voor een niet-developer.
+4. Bij vermoeden dat antwoorden binnen zijn → `list_requests({ status: 'submitted' })`.
+5. Suggereer `/loop-in` voor expliciete intent.
+
+### Slash command: `/loop-in`
+
+De bewuste "ik wil nu een vragenlijst sturen"-knop. Twee modi:
+
+**Zonder argumenten:**
+```
+/loop-in
+  → Claude: "Wat heb je nodig en van wie? Voorbeelden:
+     - 'akkoord van Annet over de homepage copy'
+     - 'industry input van een accountant over BTW-handling'
+     - 'feedback van Mark op het mockup'"
+  → Dev beschrijft kort
+  → Claude drafted titel, intro, private context, questions
+  → Review-step via AskUserQuestion: "Verstuur / Aanpassen / Annuleer"
+  → Bij verstuur → MCP create_request → URL terug
+```
+
+**Met oneliner:**
+```
+/loop-in mark moet kiezen tussen layout A en B voor de homepage hero
+  → Claude slaat "wat heb je nodig"-vraag over, gaat direct naar drafting
+  → Zelfde review-step en verstuur-flow
+```
+
+**Bewuste review-step:** voorkomt dat Claude een onhandige vragenlijst de wereld
+in slingert. Toont dev de concept-vragen + intro voor verzending.
+
+### Géén aparte slash commands voor pull/list/cancel
+
+Natural language via de skill volstaat:
+- "check ff" → `list_requests` + auto-pull van submitted
+- "wat staat er open?" → `list_requests`
+- "cancel het design-linkje" → `cancel_request`
+
+Als deze route in de praktijk flaky blijkt, kan later een `/loop` parent command
+toegevoegd worden met `ask|check|list|cancel` sub-acties. Niet in MVP scope.
+
+### Deliverables voor invocation
+
+- `dist/.claude/skills/loop-in.md` — skill-bestand met triggers + tool-usage guidance
+- `dist/.claude/commands/loop-in.md` — slash command definitie
+- Install-instructies in README (kopieer naar `~/.claude/` of `.claude/`)
+
 ## Implementation notes
 
 - **Voor UI/UX werk:** raadpleeg de `/frontend-design` skill (zowel client form
   als dashboard).
 - **MCP server skeleton:** `@modelcontextprotocol/sdk` met streamable HTTP transport.
 - **Naming:** project heet "Loop". Repo blijft `loop-mcp` (matched al de directory).
+  Slash command + skill heten beide `loop-in`.
 - **Sequencing (volgordehints, geen plan):** db + auth eerst, dan requests/answers
-  domain, dan MCP tools, dan client form SPA, dan dashboard. Uploads kunnen na de
-  text-only happy path.
+  domain, dan MCP tools, dan client form SPA, dan dashboard, dan skill + slash
+  command files. Uploads kunnen na de text-only happy path.
