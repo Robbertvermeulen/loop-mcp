@@ -1,0 +1,8 @@
+.worktrees/
+node_modules/
+*.db
+*.db-journal
+.env
+.env.local
+dist/
+.DS_Store
