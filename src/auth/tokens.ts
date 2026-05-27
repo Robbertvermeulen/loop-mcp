@@ -52,7 +52,8 @@ export async function verifyApiToken(
   void db
     .update(apiTokens)
     .set({ lastUsedAt: now() })
-    .where(eq(apiTokens.id, row.token.id));
+    .where(eq(apiTokens.id, row.token.id))
+    .catch(() => { /* best-effort; ignore */ });
 
   return { user: row.user, tokenId: row.token.id };
 }
