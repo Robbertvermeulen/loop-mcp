@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "test": "bun test src/",
+    "test": "bun test --conditions browser src/",
     "typecheck": "tsc --noEmit",
     "e2e": "playwright test"
   },
@@ -15,13 +15,17 @@
     "solid-js": "^1.9.3"
   },
   "devDependencies": {
-    "vite": "^6.0.7",
-    "vite-plugin-solid": "^2.11.0",
-    "typescript": "^5.7.2",
-    "tailwindcss": "^3.4.17",
-    "postcss": "^8.4.49",
-    "autoprefixer": "^10.4.20",
+    "@babel/core": "^7.29.7",
+    "@babel/preset-typescript": "^7.29.7",
+    "@happy-dom/global-registrator": "^17.0.0",
+    "@playwright/test": "^1.49.1",
     "@solidjs/testing-library": "^0.8.10",
-    "@playwright/test": "^1.49.1"
+    "autoprefixer": "^10.4.20",
+    "babel-preset-solid": "^1.9.12",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7",
+    "vite-plugin-solid": "^2.11.0"
   }
 }

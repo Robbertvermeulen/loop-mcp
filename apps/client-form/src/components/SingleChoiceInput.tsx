@@ -12,9 +12,11 @@ const OTHER = '__other__';
 
 export default function SingleChoiceInput(props: SingleChoiceInputProps) {
   const [otherText, setOtherText] = createSignal(props.value?.other ?? '');
-  const selected = () => props.value?.value;
+  const [internalSelected, setInternalSelected] = createSignal(props.value?.value);
+  const selected = () => props.value?.value ?? internalSelected();
 
   function pick(v: string) {
+    setInternalSelected(v);
     if (v === OTHER) {
       props.onChange({ value: OTHER, other: otherText() });
     } else {

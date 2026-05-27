@@ -1,4 +1,4 @@
-import { For } from 'solid-js';
+import { createSignal, For } from 'solid-js';
 
 interface MultiChoiceInputProps {
   prompt: string;
@@ -10,15 +10,20 @@ interface MultiChoiceInputProps {
 }
 
 export default function MultiChoiceInput(props: MultiChoiceInputProps) {
-  const values = () => props.value?.values ?? [];
+  const [internal, setInternal] = createSignal<string[]>(props.value?.values ?? []);
+  const values = () => props.value?.values ?? internal();
 
   function toggle(option: string) {
     const current = values();
     if (current.includes(option)) {
-      props.onChange({ values: current.filter((v) => v !== option) });
+      const next = current.filter((v) => v !== option);
+      setInternal(next);
+      props.onChange({ values: next });
     } else {
       if (props.maxSelections !== undefined && current.length >= props.maxSelections) return;
-      props.onChange({ values: [...current, option] });
+      const next = [...current, option];
+      setInternal(next);
+      props.onChange({ values: next });
     }
   }
 
