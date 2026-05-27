@@ -50,6 +50,11 @@ export function createFlow(view: PublicView): Flow {
   };
 
   const prev = () => {
+    if (phase() === 'submit') {
+      setPhase('question');
+      setStepIndex(questions.length - 1);
+      return;
+    }
     if (phase() !== 'question') return;
     const i = stepIndex();
     if (i > 0) setStepIndex(i - 1);

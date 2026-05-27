@@ -1,25 +1,28 @@
 import { test, expect } from 'bun:test';
 import { createTestDb } from '@/db/test-db';
 import { buildApp } from '@/server';
-import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { mkdirSync, writeFileSync, rmSync, existsSync } from 'fs';
 import { resolve } from 'path';
+import { tmpdir } from 'os';
 
-const SPA_DIST = resolve(import.meta.dir, '../../apps/client-form/dist');
+// Use a dedicated temp directory so we never overwrite the real dist build.
+const FIXTURE_DIR = resolve(tmpdir(), 'loop-spa-fixture-test');
 
 function ensureFixtureSpa() {
-  if (!existsSync(SPA_DIST)) {
-    mkdirSync(SPA_DIST, { recursive: true });
+  if (existsSync(FIXTURE_DIR)) {
+    rmSync(FIXTURE_DIR, { recursive: true });
   }
-  writeFileSync(`${SPA_DIST}/index.html`, '<!doctype html><html><body>TEST_SPA</body></html>');
-  const assetDir = `${SPA_DIST}/assets`;
-  if (!existsSync(assetDir)) mkdirSync(assetDir, { recursive: true });
+  mkdirSync(FIXTURE_DIR, { recursive: true });
+  writeFileSync(`${FIXTURE_DIR}/index.html`, '<!doctype html><html><body>TEST_SPA</body></html>');
+  const assetDir = `${FIXTURE_DIR}/assets`;
+  mkdirSync(assetDir, { recursive: true });
   writeFileSync(`${assetDir}/test.js`, 'console.log("ok")');
 }
 
 test('GET /r/:token serves the SPA index.html', async () => {
   ensureFixtureSpa();
   const db = await createTestDb();
-  const app = buildApp({ db, publicBaseUrl: 'http://x' });
+  const app = buildApp({ db, publicBaseUrl: 'http://x', spaDistPath: FIXTURE_DIR });
   const res = await app.request('/r/sometoken');
   expect(res.status).toBe(200);
   const body = await res.text();
@@ -30,7 +33,7 @@ test('GET /r/:token serves the SPA index.html', async () => {
 test('GET /r/assets/test.js serves the asset', async () => {
   ensureFixtureSpa();
   const db = await createTestDb();
-  const app = buildApp({ db, publicBaseUrl: 'http://x' });
+  const app = buildApp({ db, publicBaseUrl: 'http://x', spaDistPath: FIXTURE_DIR });
   const res = await app.request('/r/assets/test.js');
   expect(res.status).toBe(200);
   const body = await res.text();
@@ -40,7 +43,7 @@ test('GET /r/assets/test.js serves the asset', async () => {
 test('GET /r/ returns the SPA index.html', async () => {
   ensureFixtureSpa();
   const db = await createTestDb();
-  const app = buildApp({ db, publicBaseUrl: 'http://x' });
+  const app = buildApp({ db, publicBaseUrl: 'http://x', spaDistPath: FIXTURE_DIR });
   const res = await app.request('/r/');
   expect(res.status).toBe(200);
   expect(await res.text()).toContain('TEST_SPA');

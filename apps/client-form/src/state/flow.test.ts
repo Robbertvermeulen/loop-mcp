@@ -116,3 +116,15 @@ test('reopen from thankYou returns to question at step 0', () => {
   expect(f.phase()).toBe('question' as FlowPhase);
   expect(f.stepIndex()).toBe(0);
 });
+
+test('prev() from submit phase returns to the last question', () => {
+  const f = createFlow(view);
+  f.start();
+  // navigate to last question and into submit
+  f.next();
+  f.next();
+  expect(f.phase()).toBe('submit' as FlowPhase);
+  f.prev();
+  expect(f.phase()).toBe('question' as FlowPhase);
+  expect(f.stepIndex()).toBe(view.questions.length - 1);
+});

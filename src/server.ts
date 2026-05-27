@@ -8,14 +8,14 @@ import type { TestDB } from './db/test-db';
 import { resolve } from 'path';
 import { stat } from 'fs/promises';
 
-export function buildApp(deps: { db: DB | TestDB; publicBaseUrl: string }) {
+export function buildApp(deps: { db: DB | TestDB; publicBaseUrl: string; spaDistPath?: string }) {
   const app = new Hono();
   app.onError(errorMiddleware);
   app.get('/healthz', (c) => c.json({ ok: true }));
   app.route('/mcp', buildMcpHttpRoute({ db: deps.db, publicBaseUrl: deps.publicBaseUrl }));
   app.route('/api/app', buildAppApi(deps.db));
   app.route('/api/r', buildPublicApi(deps.db));
-  const SPA_DIST = resolve(import.meta.dir, '../apps/client-form/dist');
+  const SPA_DIST = deps.spaDistPath ?? resolve(import.meta.dir, '../apps/client-form/dist');
   app.get('/r', (c) => c.redirect('/r/', 302));
   app.get('/r/*', async (c) => {
     const path = c.req.path.replace(/^\/r\/?/, '');
