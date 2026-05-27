@@ -5,9 +5,11 @@ import { getRequestByToken } from '@/requests/read';
 import { upsertDraft } from '@/answers/draft';
 import { submit } from '@/answers/submit';
 import { AppError } from '@/lib/errors';
+import { writeRateLimit } from '@/middleware/rate-limit';
 
 export function buildPublicApi(db: DB | TestDB) {
   const r = new Hono();
+  const limiter = writeRateLimit({ limit: 60, windowMs: 60_000 });
 
   r.get('/:token', async (c) => {
     const token = c.req.param('token');
@@ -30,7 +32,7 @@ export function buildPublicApi(db: DB | TestDB) {
     });
   });
 
-  r.put('/:token/draft', async (c) => {
+  r.put('/:token/draft', limiter, async (c) => {
     const token = c.req.param('token');
     const body = await c.req.json().catch(() => null);
     if (!body || typeof body !== 'object') {
@@ -40,7 +42,7 @@ export function buildPublicApi(db: DB | TestDB) {
     return c.json({ ok: true });
   });
 
-  r.post('/:token/submit', async (c) => {
+  r.post('/:token/submit', limiter, async (c) => {
     const token = c.req.param('token');
     const body = await c.req.json().catch(() => null);
     if (!body || typeof body !== 'object') {
