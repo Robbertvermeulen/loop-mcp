@@ -21,7 +21,7 @@ const SingleChoice = z.object({
   type: z.literal('single_choice'),
   prompt: z.string().min(1),
   required: z.boolean().optional(),
-  options: z.array(z.string().min(1)).min(2),
+  options: z.array(z.string().min(1)).min(2).readonly(),
   allowOther: z.boolean().optional(),
 });
 
@@ -30,7 +30,7 @@ const MultiChoice = z.object({
   type: z.literal('multi_choice'),
   prompt: z.string().min(1),
   required: z.boolean().optional(),
-  options: z.array(z.string().min(1)).min(2),
+  options: z.array(z.string().min(1)).min(2).readonly(),
   minSelections: z.number().int().min(0).optional(),
   maxSelections: z.number().int().min(1).optional(),
 });
