@@ -52,6 +52,24 @@ curl -X POST localhost:3000/mcp \
   -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"get_response","arguments":{"ref":"test"}}}'
 ```
 
+## Client form SPA
+
+The recipient-facing form lives in `apps/client-form/`. Built with Vite + Solid + Tailwind.
+
+```bash
+# Dev: SPA on :5173 (proxies API to :3000)
+cd apps/client-form && bun run dev
+
+# Build (output: apps/client-form/dist/, served by Hono at /r/*)
+cd apps/client-form && bun run build
+
+# Component tests
+cd apps/client-form && bun run test
+
+# E2E (boots a real backend via Playwright)
+cd apps/client-form && bun run e2e
+```
+
 ## Tests
 
 ```bash
@@ -63,7 +81,7 @@ bun test
 ## Plan status
 
 - [x] Plan 1 — Backend foundation + MCP MVP (text-only)
-- [ ] Plan 2 — Client form SPA (Vite + Solid)
+- [x] Plan 2 — Client form SPA (Vite + Solid)
 - [ ] Plan 3 — Dashboard
 - [ ] Plan 4 — File uploads (R2)
 - [ ] Plan 5 — Invocation files (`loop-in` skill + slash command)
