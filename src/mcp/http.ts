@@ -8,7 +8,7 @@ import { buildMcpServer } from './server';
 export function buildMcpHttpRoute(opts: { db: DB | TestDB; publicBaseUrl: string }) {
   const r = new Hono();
 
-  r.post('/', async (c) => {
+  r.all('/', async (c) => {
     const user = await authenticateBearer(opts.db, c.req.header('authorization'));
     const server = buildMcpServer({ db: opts.db, user, publicBaseUrl: opts.publicBaseUrl });
     const transport = new WebStandardStreamableHTTPServerTransport({
