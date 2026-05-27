@@ -104,7 +104,7 @@ Each `src/<module>/*.ts` has a sibling `<file>.test.ts` (e.g., `src/requests/cre
   },
   "dependencies": {
     "@libsql/client": "^0.14.0",
-    "@modelcontextprotocol/sdk": "^1.0.4",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@node-rs/argon2": "^2.0.2",
     "drizzle-orm": "^0.36.4",
     "hono": "^4.6.14",
@@ -153,7 +153,6 @@ export default {
   schema: './src/db/schema.ts',
   out: './migrations',
   dialect: 'sqlite',
-  driver: 'libsql',
   dbCredentials: {
     url: process.env.DATABASE_URL ?? 'file:./loop.db',
   },
