@@ -104,7 +104,7 @@ Each `src/<module>/*.ts` has a sibling `<file>.test.ts` (e.g., `src/requests/cre
   },
   "dependencies": {
     "@libsql/client": "^0.14.0",
-    "@modelcontextprotocol/sdk": "^1.0.4",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@node-rs/argon2": "^2.0.2",
     "drizzle-orm": "^0.36.4",
     "hono": "^4.6.14",
@@ -153,7 +153,6 @@ export default {
   schema: './src/db/schema.ts',
   out: './migrations',
   dialect: 'sqlite',
-  driver: 'libsql',
   dbCredentials: {
     url: process.env.DATABASE_URL ?? 'file:./loop.db',
   },
@@ -273,22 +272,16 @@ export const users = sqliteTable('users', {
   createdAt: integer('created_at').notNull(),
 });
 
-export const apiTokens = sqliteTable(
-  'api_tokens',
-  {
-    id: text('id').primaryKey(),
-    userId: text('user_id')
-      .notNull()
-      .references(() => users.id, { onDelete: 'cascade' }),
-    tokenHash: text('token_hash').notNull().unique(),
-    label: text('label').notNull(),
-    lastUsedAt: integer('last_used_at'),
-    createdAt: integer('created_at').notNull(),
-  },
-  (t) => ({
-    byHash: index('idx_api_tokens_hash').on(t.tokenHash),
-  })
-);
+export const apiTokens = sqliteTable('api_tokens', {
+  id: text('id').primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  tokenHash: text('token_hash').notNull().unique(),
+  label: text('label').notNull(),
+  lastUsedAt: integer('last_used_at'),
+  createdAt: integer('created_at').notNull(),
+});
 
 export const sessions = sqliteTable('sessions', {
   id: text('id').primaryKey(),
@@ -338,7 +331,6 @@ export const requests = sqliteTable(
   (t) => ({
     uniqUserSlug: uniqueIndex('idx_requests_user_slug').on(t.userId, t.slug),
     byUserCreated: index('idx_requests_user_created').on(t.userId, t.createdAt),
-    byToken: index('idx_requests_token').on(t.token),
   })
 );
 
@@ -431,12 +423,13 @@ Create `src/lib/ids.test.ts`:
 import { test, expect } from 'bun:test';
 import { newUlid, newUrlSafeToken } from './ids';
 
-test('newUlid returns a 26-char lexicographically-sortable ID', () => {
+test('newUlid returns a 26-char ID using the Crockford base32 alphabet', () => {
   const a = newUlid();
   const b = newUlid();
   expect(a).toHaveLength(26);
   expect(b).toHaveLength(26);
-  expect(a < b || a === b).toBe(true);
+  expect(a).toMatch(/^[0-9A-Z]{26}$/);
+  expect(a).not.toBe(b);
 });
 
 test('newUrlSafeToken returns a 43-char URL-safe string (32 random bytes base64url)', () => {
@@ -769,7 +762,7 @@ const SingleChoice = z.object({
   type: z.literal('single_choice'),
   prompt: z.string().min(1),
   required: z.boolean().optional(),
-  options: z.array(z.string().min(1)).min(2),
+  options: z.array(z.string().min(1)).min(2).readonly(),
   allowOther: z.boolean().optional(),
 });
 
@@ -778,7 +771,7 @@ const MultiChoice = z.object({
   type: z.literal('multi_choice'),
   prompt: z.string().min(1),
   required: z.boolean().optional(),
-  options: z.array(z.string().min(1)).min(2),
+  options: z.array(z.string().min(1)).min(2).readonly(),
   minSelections: z.number().int().min(0).optional(),
   maxSelections: z.number().int().min(1).optional(),
 });
@@ -1259,7 +1252,8 @@ export async function verifyApiToken(
   void db
     .update(apiTokens)
     .set({ lastUsedAt: now() })
-    .where(eq(apiTokens.id, row.token.id));
+    .where(eq(apiTokens.id, row.token.id))
+    .catch(() => { /* best-effort; ignore */ });
 
   return { user: row.user, tokenId: row.token.id };
 }
@@ -1458,7 +1452,7 @@ export async function createRequest(
   }
 
   // Quota check
-  const [{ n }] = await db
+  const rows = await db
     .select({ n: count() })
     .from(requests)
     .where(
@@ -1467,6 +1461,7 @@ export async function createRequest(
         inArray(requests.status, ACTIVE_STATUSES as unknown as string[])
       )
     );
+  const n = rows[0]?.n ?? 0;
   if (n >= MAX_ACTIVE_REQUESTS_PER_USER) {
     throw new AppError(
       'quota_exceeded',
