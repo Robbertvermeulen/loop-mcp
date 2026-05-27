@@ -272,22 +272,16 @@ export const users = sqliteTable('users', {
   createdAt: integer('created_at').notNull(),
 });
 
-export const apiTokens = sqliteTable(
-  'api_tokens',
-  {
-    id: text('id').primaryKey(),
-    userId: text('user_id')
-      .notNull()
-      .references(() => users.id, { onDelete: 'cascade' }),
-    tokenHash: text('token_hash').notNull().unique(),
-    label: text('label').notNull(),
-    lastUsedAt: integer('last_used_at'),
-    createdAt: integer('created_at').notNull(),
-  },
-  (t) => ({
-    byHash: index('idx_api_tokens_hash').on(t.tokenHash),
-  })
-);
+export const apiTokens = sqliteTable('api_tokens', {
+  id: text('id').primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  tokenHash: text('token_hash').notNull().unique(),
+  label: text('label').notNull(),
+  lastUsedAt: integer('last_used_at'),
+  createdAt: integer('created_at').notNull(),
+});
 
 export const sessions = sqliteTable('sessions', {
   id: text('id').primaryKey(),
@@ -337,7 +331,6 @@ export const requests = sqliteTable(
   (t) => ({
     uniqUserSlug: uniqueIndex('idx_requests_user_slug').on(t.userId, t.slug),
     byUserCreated: index('idx_requests_user_created').on(t.userId, t.createdAt),
-    byToken: index('idx_requests_token').on(t.token),
   })
 );
 

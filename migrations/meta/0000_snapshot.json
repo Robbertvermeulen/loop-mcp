@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "552c49de-9f6f-46af-94b3-dffaa1fa04a4",
+  "id": "c242b4e4-1596-45f1-bc29-743f6603e6a3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "api_tokens": {
@@ -57,13 +57,6 @@
             "token_hash"
           ],
           "isUnique": true
-        },
-        "idx_api_tokens_hash": {
-          "name": "idx_api_tokens_hash",
-          "columns": [
-            "token_hash"
-          ],
-          "isUnique": false
         }
       },
       "foreignKeys": {
@@ -283,13 +276,6 @@
           "columns": [
             "user_id",
             "created_at"
-          ],
-          "isUnique": false
-        },
-        "idx_requests_token": {
-          "name": "idx_requests_token",
-          "columns": [
-            "token"
           ],
           "isUnique": false
         }

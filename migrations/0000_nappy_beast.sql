@@ -9,7 +9,6 @@ CREATE TABLE `api_tokens` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `api_tokens_token_hash_unique` ON `api_tokens` (`token_hash`);--> statement-breakpoint
-CREATE INDEX `idx_api_tokens_hash` ON `api_tokens` (`token_hash`);--> statement-breakpoint
 CREATE TABLE `projects` (
 	`id` text PRIMARY KEY NOT NULL,
 	`user_id` text NOT NULL,
@@ -43,7 +42,6 @@ CREATE TABLE `requests` (
 CREATE UNIQUE INDEX `requests_token_unique` ON `requests` (`token`);--> statement-breakpoint
 CREATE UNIQUE INDEX `idx_requests_user_slug` ON `requests` (`user_id`,`slug`);--> statement-breakpoint
 CREATE INDEX `idx_requests_user_created` ON `requests` (`user_id`,`created_at`);--> statement-breakpoint
-CREATE INDEX `idx_requests_token` ON `requests` (`token`);--> statement-breakpoint
 CREATE TABLE `sessions` (
 	`id` text PRIMARY KEY NOT NULL,
 	`user_id` text NOT NULL,
