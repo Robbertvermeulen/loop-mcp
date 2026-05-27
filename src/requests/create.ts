@@ -47,7 +47,7 @@ export async function createRequest(
   }
 
   // Quota check
-  const [{ n }] = await db
+  const rows = await db
     .select({ n: count() })
     .from(requests)
     .where(
@@ -56,6 +56,7 @@ export async function createRequest(
         inArray(requests.status, ACTIVE_STATUSES as unknown as string[])
       )
     );
+  const n = rows[0]?.n ?? 0;
   if (n >= MAX_ACTIVE_REQUESTS_PER_USER) {
     throw new AppError(
       'quota_exceeded',
