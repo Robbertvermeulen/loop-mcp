@@ -2,6 +2,268 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── CSS Variables ──────────────────────────────────────────────── */
+:root {
+  --paper:       #FAF7F2;
+  --paper-deep:  #F1ECE4;
+  --ink:         #15171D;
+  --gray-warm:   #6B6259;
+  --gray-soft:   #B8AFA3;
+  --clay:        #B8552B;
+  --clay-deep:   #8E4322;
+}
+
+/* ── Base ───────────────────────────────────────────────────────── */
 html, body, #root {
   height: 100%;
 }
+
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: 'Geist', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Paper grain overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  opacity: 0.04;
+  mix-blend-mode: multiply;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Typography helpers ─────────────────────────────────────────── */
+.font-display {
+  font-family: 'Fraunces', serif;
+}
+
+.font-mono {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+}
+
+/* ── Rise animation ─────────────────────────────────────────────── */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rise {
+  opacity: 0;
+  animation: rise 600ms ease-out forwards;
+}
+
+.rise-1 { animation-delay: 0ms; }
+.rise-2 { animation-delay: 80ms; }
+.rise-3 { animation-delay: 160ms; }
+.rise-4 { animation-delay: 240ms; }
+.rise-5 { animation-delay: 320ms; }
+
+/* ── Focus underline animation ──────────────────────────────────── */
+.input-underline-wrap {
+  position: relative;
+  display: block;
+}
+
+.input-underline-wrap::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--clay);
+  transition: width 50ms ease-out;
+}
+
+.input-underline-wrap:focus-within::after {
+  width: 100%;
+}
+
+/* ── Button states ──────────────────────────────────────────────── */
+.btn-clay {
+  background-color: var(--clay);
+  color: var(--paper);
+  font-family: 'Geist', system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  padding: 1rem 2rem;
+  border-radius: 2px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 120ms ease-out, transform 80ms ease-out;
+  display: inline-block;
+}
+
+.btn-clay:hover {
+  background-color: var(--clay-deep);
+}
+
+.btn-clay:active {
+  transform: scale(0.98);
+}
+
+.btn-clay:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  background: none;
+  border: none;
+  color: var(--gray-warm);
+  font-family: 'Geist', system-ui, sans-serif;
+  font-weight: 400;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+  transition: color 120ms ease-out;
+}
+
+.btn-ghost:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+.btn-link-clay {
+  background: none;
+  border: none;
+  color: var(--clay);
+  font-family: 'Geist', system-ui, sans-serif;
+  font-weight: 400;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  transition: color 120ms ease-out;
+}
+
+.btn-link-clay:hover {
+  color: var(--clay-deep);
+}
+
+/* ── Text inputs ────────────────────────────────────────────────── */
+.text-input-editorial {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--ink);
+  outline: none;
+  padding: 0.5rem 0 0.625rem;
+  font-family: 'Fraunces', serif;
+  font-size: 1.5rem;
+  color: var(--ink);
+  caret-color: var(--clay);
+}
+
+.text-input-editorial::placeholder {
+  color: var(--gray-soft);
+  font-style: italic;
+}
+
+.textarea-editorial {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--ink);
+  outline: none;
+  padding: 0.5rem 0 0.625rem;
+  font-family: 'Fraunces', serif;
+  font-size: 1.25rem;
+  color: var(--ink);
+  caret-color: var(--clay);
+  resize: none;
+  line-height: 1.5;
+}
+
+.textarea-editorial::placeholder {
+  color: var(--gray-soft);
+  font-style: italic;
+}
+
+/* ── Custom radio (square) ──────────────────────────────────────── */
+@layer components {
+  .choice-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    padding: 0.625rem 0;
+    font-family: 'Geist', system-ui, sans-serif;
+    font-size: 1rem;
+    color: var(--ink);
+    transition: color 80ms ease-out;
+  }
+
+  .choice-label:hover .choice-box {
+    border-color: var(--clay);
+  }
+
+  .choice-box {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+    border: 2px solid var(--ink);
+    position: relative;
+    transition: border-color 80ms ease-out, background-color 80ms ease-out;
+  }
+
+  .choice-box-checked {
+    background-color: var(--clay);
+    border-color: var(--clay);
+  }
+
+  /* Checkmark for multi-choice */
+  .choice-box-check::after {
+    content: '';
+    position: absolute;
+    left: 1px;
+    top: -1px;
+    width: 6px;
+    height: 9px;
+    border-right: 2px solid var(--paper);
+    border-bottom: 2px solid var(--paper);
+    transform: rotate(40deg);
+  }
+
+  .choice-input-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+}
+
+/* ── Loading dots ───────────────────────────────────────────────── */
+@keyframes blink {
+  0%, 80%, 100% { opacity: 0; }
+  40% { opacity: 1; }
+}
+
+.loading-dot {
+  display: inline-block;
+  animation: blink 1.4s ease-in-out infinite;
+}
+
+.loading-dot:nth-child(2) { animation-delay: 0.2s; }
+.loading-dot:nth-child(3) { animation-delay: 0.4s; }

@@ -29,19 +29,29 @@ export default function MultiChoiceInput(props: MultiChoiceInputProps) {
 
   return (
     <div>
-      <p>{props.prompt}</p>
-      <div>
+      <p class="font-display font-medium text-3xl md:text-4xl leading-snug text-ink mb-6">
+        {props.prompt}
+      </p>
+      <div class="space-y-1">
         <For each={props.options}>
-          {(opt) => (
-            <label>
-              <input
-                type="checkbox"
-                checked={values().includes(opt)}
-                onChange={() => toggle(opt)}
-              />
-              <span>{opt}</span>
-            </label>
-          )}
+          {(opt) => {
+            const checked = () => values().includes(opt);
+            return (
+              <label class="choice-label">
+                <input
+                  type="checkbox"
+                  checked={checked()}
+                  onChange={() => toggle(opt)}
+                  class="choice-input-hidden"
+                />
+                <span
+                  class={`choice-box${checked() ? ' choice-box-checked choice-box-check' : ''}`}
+                  style={{ width: '14px', height: '14px' }}
+                />
+                <span>{opt}</span>
+              </label>
+            );
+          }}
         </For>
       </div>
     </div>

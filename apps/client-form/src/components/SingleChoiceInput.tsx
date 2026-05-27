@@ -31,39 +31,49 @@ export default function SingleChoiceInput(props: SingleChoiceInputProps) {
 
   return (
     <div>
-      <p>{props.prompt}</p>
-      <div role="radiogroup">
+      <p class="font-display font-medium text-3xl md:text-4xl leading-snug text-ink mb-6">
+        {props.prompt}
+      </p>
+      <div role="radiogroup" class="space-y-1">
         <For each={props.options}>
           {(opt) => (
-            <label>
+            <label class="choice-label">
               <input
                 type="radio"
                 name="single-choice"
                 value={opt}
                 checked={selected() === opt}
                 onChange={() => pick(opt)}
+                class="choice-input-hidden"
               />
+              <span class={`choice-box${selected() === opt ? ' choice-box-checked' : ''}`} />
               <span>{opt}</span>
             </label>
           )}
         </For>
         <Show when={props.allowOther}>
-          <label>
+          <label class="choice-label">
             <input
               type="radio"
               name="single-choice"
               value={OTHER}
               checked={selected() === OTHER}
               onChange={() => pick(OTHER)}
+              class="choice-input-hidden"
             />
+            <span class={`choice-box${selected() === OTHER ? ' choice-box-checked' : ''}`} />
             <span>Other</span>
           </label>
           <Show when={selected() === OTHER}>
-            <input
-              type="text"
-              value={otherText()}
-              onInput={(e) => updateOther(e.currentTarget.value)}
-            />
+            <span class="input-underline-wrap block mt-3 ml-6">
+              <input
+                type="text"
+                class="text-input-editorial text-xl"
+                value={otherText()}
+                placeholder="Please specify…"
+                onInput={(e) => updateOther(e.currentTarget.value)}
+              />
+            </span>
           </Show>
         </Show>
       </div>

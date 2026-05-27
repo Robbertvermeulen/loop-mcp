@@ -123,14 +123,16 @@ function Running(props: { view: PublicView; token: string }) {
         </Show>
       </Match>
       <Match when={flow.phase() === 'submit'}>
-        <div class="min-h-screen flex flex-col items-center justify-center p-8 max-w-2xl mx-auto">
-          <h1 class="text-2xl">Ready to send?</h1>
-          <p class="mt-4 text-sm text-neutral-500">
+        <div class="min-h-screen flex flex-col items-center justify-center px-6 md:px-10 py-24 max-w-[34rem] mx-auto text-left">
+          <h1 class="rise rise-1 font-display font-medium text-5xl md:text-6xl leading-[1.05] tracking-tight text-ink w-full">
+            Ready to send?
+          </h1>
+          <p class="rise rise-2 mt-6 font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--gray-warm)] w-full">
             {Object.keys(flow.answers()).length} of {props.view.questions.length} answered
           </p>
-          <div class="mt-8 flex gap-4">
-            <button onClick={() => flow.prev()}>Back</button>
-            <button class="px-6 py-3 bg-black text-white" onClick={handleSubmit}>
+          <div class="rise rise-3 mt-10 flex items-center gap-6 w-full">
+            <button class="btn-ghost text-sm" onClick={() => flow.prev()}>Back</button>
+            <button class="btn-clay text-sm uppercase tracking-widest px-8 py-4" onClick={handleSubmit}>
               Send answers
             </button>
           </div>
