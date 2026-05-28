@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { errorMiddleware } from './middleware/error';
 import { buildPublicApi } from './api/public';
 import { buildAppApi } from './api/app';
+import { buildDeviceApi } from './api/device';
 import { buildMcpHttpRoute } from './mcp/http';
 import { db as prodDb, type DB } from './db/client';
 import type { TestDB } from './db/test-db';
@@ -15,6 +16,7 @@ export function buildApp(deps: { db: DB | TestDB; publicBaseUrl: string; spaDist
   app.route('/mcp', buildMcpHttpRoute({ db: deps.db, publicBaseUrl: deps.publicBaseUrl }));
   app.route('/api/app', buildAppApi(deps.db));
   app.route('/api/r', buildPublicApi(deps.db));
+  app.route('/api/device', buildDeviceApi(deps.db));
   const SPA_DIST = deps.spaDistPath ?? resolve(import.meta.dir, '../apps/client-form/dist');
   app.get('/r', (c) => c.redirect('/r/', 302));
   app.get('/r/*', async (c) => {
