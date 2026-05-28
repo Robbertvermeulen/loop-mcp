@@ -70,6 +70,47 @@ cd apps/client-form && bun run test
 cd apps/client-form && bun run e2e
 ```
 
+## Use Loop from Claude Code
+
+Loop ships a small skill + slash command for Claude Code. With both installed, Claude will recognize when you need input from someone outside the session ("Annet moet kiezen tussen…") and either suggest `/loop-in` or run it itself.
+
+### Install (one time, ~30 seconds)
+
+```bash
+# 1. Make sure you have the Loop MCP configured in Claude Code.
+#    Add this to your Claude Code MCP config (or use `claude mcp add`):
+#
+#    "loop": {
+#      "type": "http",
+#      "url": "https://loop.app/mcp",     # or your self-hosted base URL
+#      "headers": { "Authorization": "Bearer lp_..." }
+#    }
+
+# 2. Drop the skill + slash command into Claude Code:
+mkdir -p ~/.claude/skills ~/.claude/commands
+cp dist/.claude/skills/loop-in.md     ~/.claude/skills/
+cp dist/.claude/commands/loop-in.md   ~/.claude/commands/
+
+# 3. Restart Claude Code (or just open a new session).
+```
+
+That's it. In any session:
+
+- Say something like *"Mark moet kiezen tussen layout A en B"* — the skill triggers and Claude proposes a draft.
+- Or run `/loop-in` explicitly with an optional oneliner.
+
+See `docs/invocation/examples.md` for annotated example flows.
+
+### Per-project install
+
+If you want the skill scoped to a single project instead of globally:
+
+```bash
+mkdir -p .claude/skills .claude/commands
+cp dist/.claude/skills/loop-in.md     .claude/skills/
+cp dist/.claude/commands/loop-in.md   .claude/commands/
+```
+
 ## Tests
 
 ```bash
@@ -84,4 +125,4 @@ bun test
 - [x] Plan 2 — Client form SPA (Vite + Solid)
 - [ ] Plan 3 — Dashboard
 - [ ] Plan 4 — File uploads (R2)
-- [ ] Plan 5 — Invocation files (`loop-in` skill + slash command)
+- [x] Plan 5 — Invocation files (`loop-in` skill + slash command)
