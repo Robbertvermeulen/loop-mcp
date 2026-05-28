@@ -1,0 +1,4 @@
+[test]
+preload = ["./test-setup.ts"]
+conditions = ["browser", "development"]
+jsxImportSource = "solid-js"
