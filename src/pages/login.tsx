@@ -32,7 +32,7 @@ export const LoginPage = (props: { error?: string; userCode?: string }) => (
             body: JSON.stringify(body),
           });
           if (res.ok) {
-            const next = ${JSON.stringify(props.userCode ? `/device?code=${props.userCode}` : '/')};
+            const next = ${JSON.stringify(props.userCode ? `/device?code=${props.userCode}` : '/').replace(/</g, '\\u003c')};
             window.location.href = next;
           } else {
             const err = await res.json().catch(() => ({}));

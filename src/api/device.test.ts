@@ -12,7 +12,7 @@ async function build() {
   const db = await createTestDb();
   const app = new Hono();
   app.onError(errorMiddleware);
-  app.route('/api/device', buildDeviceApi(db));
+  app.route('/api/device', buildDeviceApi(db, 'http://x'));
   return { app, db };
 }
 

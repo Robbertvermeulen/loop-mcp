@@ -20,7 +20,7 @@ export function buildApp(deps: { db: DB | TestDB; publicBaseUrl: string; spaDist
   app.route('/mcp', buildMcpHttpRoute({ db: deps.db, publicBaseUrl: deps.publicBaseUrl }));
   app.route('/api/app', buildAppApi(deps.db));
   app.route('/api/r', buildPublicApi(deps.db));
-  app.route('/api/device', buildDeviceApi(deps.db));
+  app.route('/api/device', buildDeviceApi(deps.db, deps.publicBaseUrl));
   app.get('/signup', cookieAuth(deps.db), (c) => {
     const code = c.req.query('code');
     return c.html(<SignupPage userCode={code} />);

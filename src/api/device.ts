@@ -6,7 +6,7 @@ import { initDeviceCode, pollDeviceCode, approveDeviceCode, DEVICE_CODE_TTL_MS }
 import { cookieAuth } from '@/middleware/cookie-auth';
 import { AppError } from '@/lib/errors';
 
-export function buildDeviceApi(db: DB | TestDB) {
+export function buildDeviceApi(db: DB | TestDB, publicBaseUrl: string) {
   const r = new Hono<{ Variables: { user?: User } }>();
   r.use('*', cookieAuth(db));
 
@@ -16,12 +16,11 @@ export function buildDeviceApi(db: DB | TestDB) {
       throw new AppError('validation_failed', 'label required', 400);
     }
     const init = await initDeviceCode(db, { label: body.label.trim() });
-    const baseUrl = c.req.header('host') ? `http://${c.req.header('host')}` : '';
     return c.json({
       deviceCode: init.deviceCode,
       userCode: init.userCode,
-      verificationUri: `${baseUrl}/device`,
-      verificationUriComplete: `${baseUrl}/device?code=${init.userCode}`,
+      verificationUri: `${publicBaseUrl}/device`,
+      verificationUriComplete: `${publicBaseUrl}/device?code=${init.userCode}`,
       expiresIn: Math.floor(DEVICE_CODE_TTL_MS / 1000),
       interval: 2,
     });

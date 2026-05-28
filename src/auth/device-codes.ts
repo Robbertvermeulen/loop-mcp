@@ -100,17 +100,24 @@ export async function pollDeviceCode(db: AnyDb, deviceCode: string): Promise<Pol
   if (found.status === 'expired') return { status: 'expired' };
 
   if (found.status === 'approved' && found.userId) {
-    // Atomically transition approved → exchanged, issue API token
-    const { plain, id: tokenId } = await createApiToken(db, found.userId, found.label);
-    const result = await db
+    // Atomically claim the exchange first (no token created yet)
+    const claimed = await db
       .update(deviceCodes)
-      .set({ status: 'exchanged', exchangedAt: now(), issuedTokenId: tokenId })
+      .set({ status: 'exchanged', exchangedAt: now() })
       .where(and(eq(deviceCodes.id, found.id), eq(deviceCodes.status, 'approved')))
-      .returning({ id: deviceCodes.id });
-    if (result.length === 0) {
-      // Lost the race; another caller already exchanged. Return exchanged without token.
+      .returning({ id: deviceCodes.id, userId: deviceCodes.userId });
+
+    if (claimed.length === 0) {
+      // Lost the race — someone else won. Don't create a token.
       return { status: 'exchanged' };
     }
+
+    // We won. Create the token and link it.
+    const { plain, id: tokenId } = await createApiToken(db, found.userId, found.label);
+    await db
+      .update(deviceCodes)
+      .set({ issuedTokenId: tokenId })
+      .where(eq(deviceCodes.id, found.id));
     return { status: 'exchanged', token: plain };
   }
 

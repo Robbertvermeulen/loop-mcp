@@ -15,7 +15,7 @@
     },
     "loop_token": {
       "type": "string",
-      "description": "Loop API token (run /loop-connect to get one if you don't have it yet)",
+      "description": "Leave blank if you don't have one yet — run /loop-connect after install. Otherwise paste your Loop API token (starts with lp_).",
       "default": "",
       "sensitive": true
     }
